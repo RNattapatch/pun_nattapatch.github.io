@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ปัน ณัฐพัชร์ — AI Sales System สำหรับ SME ไทย</title>
+  <meta name="description" content="ช่วยเจ้าของ SME เพิ่มยอดขาย 40%+ ด้วย AI Sales System — เหนือกว่าแค่การทำ Training">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:        #072b4e;
+      --navy-deep:   #040f1e;
+      --navy-mid:    #0d3a5c;
+      --coral:       #dd4155;
+      --coral-dark:  #c43245;
+      --coral-glow:  rgba(221, 65, 85, 0.18);
+      --coral-tint:  rgba(221, 65, 85, 0.08);
+      --white-80:    rgba(255,255,255,0.80);
+      --white-50:    rgba(255,255,255,0.50);
+      --white-20:    rgba(255,255,255,0.20);
+      --white-08:    rgba(255,255,255,0.08);
+      --white-04:    rgba(255,255,255,0.04);
+      --card-bg:     rgba(255,255,255,0.035);
+      --card-border: rgba(255,255,255,0.09);
+      --radius-sm:   10px;
+      --radius-md:   16px;
+      --radius-lg:   24px;
+      --radius-xl:   32px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: var(--navy-deep);
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* === ANIMATED BACKGROUND === */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden; pointer-events: none;
+    }
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: 0.35;
+      animation: orbFloat 12s ease-in-out infinite;
+    }
+    .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #072b4e 0%, transparent 70%); top: -100px; left: -100px; }
+    .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, var(--coral) 0%, transparent 70%); top: 20%; right: -80px; opacity: 0.12; animation-delay: -4s; }
+    .orb-3 { width: 600px; height: 600px; background: radial-gradient(circle, #0d3a5c 0%, transparent 70%); bottom: -150px; left: 30%; animation-delay: -8s; }
+    .orb-4 { width: 300px; height: 300px; background: radial-gradient(circle, var(--coral) 0%, transparent 70%); bottom: 10%; right: 20%; opacity: 0.08; animation-delay: -2s; }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-30px) scale(1.05); }
+    }
+
+    .dot-grid {
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .accent-lines {
+      position: absolute; top: 0; right: 0;
+      width: 280px; height: 280px;
+      background: repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(221,65,85,0.06) 18px, rgba(221,65,85,0.06) 19px);
+    }
+
+    /* === LAYOUT === */
+    .page {
+      position: relative; z-index: 1;
+    }
+
+    .section {
+      padding: 60px 20px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+
+    .container {
+      width: 100%; max-width: 720px;
+    }
+
+    /* === GLASS CARD === */
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      padding: 36px 32px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* === HERO SECTION === */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .brand-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--white-08); border: 1px solid var(--white-20); border-radius: 999px;
+      padding: 6px 16px; font-size: 13px; font-weight: 600; color: var(--white-80);
+      letter-spacing: 0.04em; margin-bottom: 24px;
+      animation: fadeDown 0.6s ease both;
+    }
+    .brand-badge .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--coral); box-shadow: 0 0 8px var(--coral);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(1.3); } }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    .hero h1 {
+      font-size: clamp(26px, 5.5vw, 42px);
+      font-weight: 800;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+      animation: fadeDown 0.6s 0.1s ease both;
+    }
+    .hero h1 .accent { color: var(--coral); }
+
+    .hero-sub {
+      font-size: clamp(15px, 2.5vw, 18px);
+      color: var(--white-50);
+      line-height: 1.7;
+      max-width: 560px;
+      margin: 0 auto 36px;
+      animation: fadeDown 0.6s 0.2s ease both;
+    }
+
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, var(--coral) 0%, var(--coral-dark) 100%);
+      border: none; border-radius: var(--radius-md);
+      padding: 16px 36px;
+      font-family: 'Sarabun', sans-serif; font-size: 16px; font-weight: 700;
+      color: white; text-decoration: none;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 6px 24px rgba(221,65,85,0.3);
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(221,65,85,0.4); }
+
+    /* Social Proof Strip */
+    .proof-strip {
+      display: flex; align-items: center; justify-content: center;
+      gap: 32px; flex-wrap: wrap;
+      margin-top: 48px;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+    .proof-item {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .proof-num {
+      font-size: 28px; font-weight: 800; color: var(--coral);
+    }
+    .proof-label {
+      font-size: 12px; font-weight: 600; color: var(--white-50);
+      letter-spacing: 0.04em;
+    }
+
+    /* === SECTION HEADERS === */
+    .section-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 700; color: var(--coral);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section-label .line {
+      width: 24px; height: 2px; background: var(--coral); border-radius: 999px;
+    }
+
+    .section-title {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800; line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 15px; color: var(--white-50); line-height: 1.7;
+      margin-bottom: 40px; max-width: 560px;
+    }
+
+    /* === PROBLEM SECTION === */
+    .pain-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      transition: border-color 0.3s;
+    }
+    .pain-card:hover { border-color: rgba(221,65,85,0.3); }
+
+    .pain-icon {
+      font-size: 28px; margin-bottom: 12px;
+    }
+    .pain-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 8px;
+    }
+    .pain-desc {
+      font-size: 14px; color: var(--white-50); line-height: 1.6;
+    }
+
+    .cost-box {
+      background: rgba(221,65,85,0.08);
+      border: 1px solid rgba(221,65,85,0.25);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      margin-top: 32px;
+      text-align: center;
+    }
+    .cost-box .cost-label {
+      font-size: 13px; font-weight: 700; color: var(--coral);
+      letter-spacing: 0.04em; margin-bottom: 8px;
+    }
+    .cost-box .cost-value {
+      font-size: clamp(24px, 4vw, 32px); font-weight: 800; margin-bottom: 8px;
+    }
+    .cost-box .cost-desc {
+      font-size: 14px; color: var(--white-50); line-height: 1.6;
+    }
+
+    /* === OUTCOME SECTION === */
+    .outcome-grid {
+      display: grid; grid-template-columns: 1fr; gap: 16px;
+    }
+    @media (min-width: 540px) {
+      .outcome-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .outcome-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      text-align: center;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .outcome-card:hover { border-color: rgba(221,65,85,0.3); transform: translateY(-4px); }
+
+    .outcome-emoji { font-size: 36px; margin-bottom: 12px; }
+    .outcome-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .outcome-desc { font-size: 13px; color: var(--white-50); line-height: 1.6; }
+
+    .case-study-card {
+      background: rgba(221,65,85,0.05);
+      border: 1px solid rgba(221,65,85,0.18);
+      border-left: 3px solid var(--coral);
+      border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+      padding: 24px;
+      margin-top: 32px;
+    }
+    .case-label {
+      font-size: 11px; font-weight: 700; color: var(--coral);
+      letter-spacing: 0.06em; margin-bottom: 8px;
+    }
+    .case-quote {
+      font-size: 15px; color: var(--white-80); line-height: 1.6;
+      font-style: italic; margin-bottom: 8px;
+    }
+    .case-source {
+      font-size: 12px; color: var(--white-50);
+    }
+
+    /* === PRICING SECTION === */
+    .pricing-grid {
+      display: grid; grid-template-columns: 1fr; gap: 16px;
+    }
+    @media (min-width: 640px) {
+      .pricing-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .pricing-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      padding: 32px 24px;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      display: flex; flex-direction: column;
+      transition: border-color 0.3s, transform 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .pricing-card:hover { transform: translateY(-4px); }
+    .pricing-card.featured {
+      border-color: var(--coral);
+      box-shadow: 0 0 40px rgba(221,65,85,0.1);
+    }
+
+    .popular-tag {
+      position: absolute; top: 16px; right: 16px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+      background: var(--coral-glow); color: var(--coral);
+      border: 1px solid var(--coral); border-radius: 4px;
+      padding: 3px 8px;
+    }
+
+    .pricing-bucket {
+      font-size: 24px; margin-bottom: 8px;
+    }
+    .pricing-name {
+      font-size: 17px; font-weight: 700; margin-bottom: 4px;
+    }
+    .pricing-duration {
+      font-size: 12px; color: var(--white-50); margin-bottom: 20px;
+    }
+    .pricing-price {
+      font-size: clamp(28px, 4vw, 34px); font-weight: 800; color: var(--coral);
+      margin-bottom: 4px;
+    }
+    .pricing-unit {
+      font-size: 13px; color: var(--white-50); margin-bottom: 20px;
+    }
+    .pricing-outcome {
+      font-size: 13px; color: var(--white-80); line-height: 1.6;
+      padding: 14px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 20px;
+      flex: 1;
+    }
+    .pricing-features {
+      list-style: none; display: flex; flex-direction: column; gap: 8px;
+      margin-bottom: 24px;
+    }
+    .pricing-features li {
+      font-size: 13px; color: var(--white-50); line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .pricing-features li::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--coral); flex-shrink: 0; margin-top: 7px;
+    }
+
+    .pricing-cta {
+      display: flex; align-items: center; justify-content: center;
+      padding: 14px; border-radius: var(--radius-md);
+      font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 700;
+      text-decoration: none; cursor: pointer; transition: all 0.25s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pricing-cta.primary {
+      background: linear-gradient(135deg, var(--coral) 0%, var(--coral-dark) 100%);
+      border: none; color: white;
+      box-shadow: 0 4px 16px rgba(221,65,85,0.3);
+    }
+    .pricing-cta.primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(221,65,85,0.4); }
+    .pricing-cta.secondary {
+      background: none; border: 1.5px solid var(--white-20); color: var(--white-80);
+    }
+    .pricing-cta.secondary:hover { border-color: var(--coral); color: #fff; }
+
+    .upsell-note {
+      text-align: center;
+      margin-top: 32px;
+      padding: 20px 24px;
+      background: var(--white-04);
+      border: 1px solid var(--white-08);
+      border-radius: var(--radius-lg);
+      font-size: 14px; color: var(--white-50); line-height: 1.7;
+    }
+    .upsell-note strong { color: var(--white-80); }
+
+    /* === QUALIFY SECTION === */
+    .qualify-grid {
+      display: grid; grid-template-columns: 1fr; gap: 24px;
+    }
+    @media (min-width: 540px) {
+      .qualify-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+    }
+
+    .qualify-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+    .qualify-box.yes { border-left: 3px solid #6fcf97; }
+    .qualify-box.no { border-left: 3px solid var(--white-20); }
+
+    .qualify-heading {
+      font-size: 14px; font-weight: 700; margin-bottom: 16px;
+      letter-spacing: 0.02em;
+    }
+    .qualify-box.yes .qualify-heading { color: #6fcf97; }
+    .qualify-box.no .qualify-heading { color: var(--white-50); }
+
+    .qualify-list {
+      list-style: none; display: flex; flex-direction: column; gap: 10px;
+    }
+    .qualify-list li {
+      font-size: 14px; color: var(--white-80); line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .qualify-list li .q-icon {
+      flex-shrink: 0; font-size: 14px; margin-top: 2px;
+    }
+
+    /* === ABOUT SECTION === */
+    .about-card {
+      display: flex; gap: 24px; align-items: flex-start;
+    }
+    @media (max-width: 540px) {
+      .about-card { flex-direction: column; align-items: center; text-align: center; }
+    }
+    .about-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      object-fit: cover; flex-shrink: 0;
+      border: 2px solid var(--coral);
+    }
+    .about-info { flex: 1; }
+    .about-name {
+      font-size: 20px; font-weight: 800; margin-bottom: 4px;
+    }
+    .about-title {
+      font-size: 13px; color: var(--coral); font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .about-bullets {
+      list-style: none; display: flex; flex-direction: column; gap: 10px;
+    }
+    .about-bullets li {
+      font-size: 14px; color: var(--white-80); line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .about-bullets li .ab-icon {
+      flex-shrink: 0; font-size: 14px; margin-top: 2px; color: var(--coral);
+    }
+
+    /* === CTA SECTION === */
+    .cta-section {
+      background: linear-gradient(180deg, transparent 0%, rgba(221,65,85,0.05) 100%);
+      padding: 80px 20px;
+    }
+    .cta-card {
+      text-align: center;
+      background: var(--card-bg);
+      border: 1px solid rgba(221,65,85,0.2);
+      border-radius: var(--radius-xl);
+      padding: 48px 32px;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+    .cta-title {
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 800; line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    .cta-sub {
+      font-size: 15px; color: var(--white-50); line-height: 1.7;
+      margin-bottom: 32px; max-width: 460px; margin-left: auto; margin-right: auto;
+    }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, var(--coral) 0%, var(--coral-dark) 100%);
+      border: none; border-radius: var(--radius-md);
+      padding: 18px 40px;
+      font-family: 'Sarabun', sans-serif; font-size: 17px; font-weight: 700;
+      color: white; text-decoration: none;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 8px 30px rgba(221,65,85,0.35);
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(221,65,85,0.45); }
+    .cta-note {
+      margin-top: 16px; font-size: 13px; color: var(--white-50);
+    }
+
+    /* === FOOTER === */
+    .site-footer {
+      text-align: center; padding: 32px 20px;
+      font-size: 12px; color: var(--white-20);
+    }
+    .site-footer a { color: var(--white-50); text-decoration: none; }
+    .site-footer a:hover { color: var(--coral); }
+
+    /* === SCROLL ANIMATIONS === */
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1; transform: translateY(0);
+    }
+
+    @media (max-width: 420px) {
+      .section { padding: 40px 16px; }
+      .glass-card { padding: 24px 20px; }
+      .pricing-card { padding: 24px 20px; }
+      .cta-card { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="dot-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="accent-lines"></div>
+</div>
+
+<div class="page">
+
+  <!-- ========== HERO — Above the Fold ========== -->
+  <section class="hero">
+    <div class="brand-badge"><span class="dot"></span> @pun_nattapatch</div>
+    <h1>
+      <span id="headline-main">ทีมขายของคุณทำงานหนักพอแล้ว</span><br>
+      <span id="headline-sub">แต่ยอดยังไม่ขยับ — </span><span class="accent" id="headline-accent">นี่คือเหตุผล</span>
+    </h1>
+    <p class="hero-sub">ช่วยเจ้าของ SME เพิ่มยอดขาย 40%+ ด้วย AI Sales System<br>ไม่ใช่แค่ Training แบบเดิมที่จบแล้วก็ลืม</p>
+    <a href="https://rnattapatch.github.io/intake-form.github.io/" class="hero-cta">ประเมินปัญหาทีมขายของคุณ &#8594;</a>
+
+    <div class="proof-strip">
+      <div class="proof-item">
+        <div class="proof-num">50+</div>
+        <div class="proof-label">CLIENTS SERVED</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-num">100+</div>
+        <div class="proof-label">SESSIONS DELIVERED</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-num">40%+</div>
+        <div class="proof-label">AVG REVENUE GROWTH</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PROBLEM SECTION — 70% ========== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label reveal"><span class="line"></span> PROBLEM</div>
+      <h2 class="section-title reveal">ปัญหาที่เจ้าของธุรกิจทุกคนเจอ<br>แต่ไม่มีใครพูดถึง</h2>
+      <p class="section-sub reveal">ถ้าคุณรู้สึกแบบนี้ — คุณไม่ได้อยู่คนเดียว</p>
+
+      <div class="pain-card reveal">
+        <div class="pain-icon">&#128548;</div>
+        <div class="pain-title">"แบกยอดขายอยู่คนเดียว ทั้งที่มีทีม"</div>
+        <div class="pain-desc">ทีมขายมี 5-20 คน แต่ยอดขายกว่า 80% มาจากคุณเอง เซลล์คนอื่นรอ lead จากบริษัท ไม่เคยหาเอง ไม่เคย follow-up เอง ถ้าคุณไม่อยู่ ยอดตก</div>
+      </div>
+
+      <div class="pain-card reveal">
+        <div class="pain-icon">&#128200;</div>
+        <div class="pain-title">"ต้นทุนขึ้นทุกเดือน แต่ทีมยังทำงานแบบเดิม"</div>
+        <div class="pain-desc">ค่าแรงขึ้น ค่า ads ขึ้น ค่า commission ขึ้น แต่ทีมขายยังใช้ Excel ติดตามลูกค้า ยังพิมพ์ proposal ด้วยมือ ยังไม่มี KPI ที่วัดได้จริง ต้นทุนต่อ deal สูงขึ้นทุกเดือน</div>
+      </div>
+
+      <div class="pain-card reveal">
+        <div class="pain-icon">&#128561;</div>
+        <div class="pain-title">"เคยจ้าง Training มาแล้ว แต่จบแล้วก็ลืม"</div>
+        <div class="pain-desc">ส่งทีมไปเรียน workshop หลักหลายหมื่น กลับมาตื่นเต้นได้ 2 สัปดาห์ แล้วก็กลับไปทำแบบเดิม เพราะไม่มีระบบรองรับ ไม่มีคนติดตาม ไม่มี tool ที่ใช้ได้จริง</div>
+      </div>
+
+      <div class="cost-box reveal">
+        <div class="cost-label">COST OF INACTION</div>
+        <div class="cost-value">&#3647;150,000 — 500,000 <span style="font-size:16px;font-weight:400;color:var(--white-50)">ต่อเดือน</span></div>
+        <div class="cost-desc">ถ้าไม่แก้ปัญหาพวกนี้ภายใน 6 เดือน ยอดขายที่หลุดไป + เงินเดือนเซลล์ที่ไม่สร้างยอด + ต้นทุน manual work ที่ซ้ำซ้อน<br>รวมกันเป็นเงินที่คุณจ่ายทุกเดือนโดยไม่จำเป็น</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== OUTCOME SECTION — 20% ========== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label reveal"><span class="line"></span> OUTCOME</div>
+      <h2 class="section-title reveal">สิ่งที่คุณจะได้จริง —<br>ไม่ใช่แค่ความรู้ แต่คือ<span style="color:var(--coral)">ระบบ</span></h2>
+      <p class="section-sub reveal">ทุก package ของปันออกแบบให้วัดผลได้ภายใน 30 วัน</p>
+
+      <div class="outcome-grid">
+        <div class="outcome-card reveal">
+          <div class="outcome-emoji">&#9200;</div>
+          <div class="outcome-title">More Time</div>
+          <div class="outcome-desc">ทีมขายได้เวลาคืน 5+ ชม./สัปดาห์ จากการ automate งานซ้ำด้วย AI — เวลาที่ได้คืนเอาไปขายได้เลย</div>
+        </div>
+        <div class="outcome-card reveal">
+          <div class="outcome-emoji">&#128176;</div>
+          <div class="outcome-title">More Money</div>
+          <div class="outcome-desc">KPI + Commission + AI Workflow ที่ทำให้ทีมขายได้ยอดจริง ไม่ใช่แค่ "ไปเรียนมา" แต่กลับมาปิด deal ได้มากขึ้น</div>
+        </div>
+        <div class="outcome-card reveal">
+          <div class="outcome-emoji">&#128737;</div>
+          <div class="outcome-title">Less Risk</div>
+          <div class="outcome-desc">ระบบ run ได้เอง คุณไม่ต้องอยู่ตลอด ทีมมี process + tool ที่ใช้จริงทุกวัน ไม่ลืม ไม่หลุด</div>
+        </div>
+      </div>
+
+      <div class="case-study-card reveal">
+        <div class="case-label">CASE STUDY</div>
+        <div class="case-quote">"จ่าย &#3647;52,800 ได้ระบบ KPI + Commission + Training ทั้งองค์กร ทีม 16 คน — ยอดขายที่เคย gap &#3647;1.95M/เดือน เริ่มปิดได้จริง"</div>
+        <div class="case-source">SME ธุรกิจวัสดุก่อสร้าง — ทีมขาย 16 คน, 6 แผนก</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PRICING SECTION ========== -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-label reveal"><span class="line"></span> SERVICES</div>
+      <h2 class="section-title reveal">เลือก Package ที่ตรงกับสถานการณ์ของคุณ</h2>
+      <p class="section-sub reveal">ทุก package จ่าย 100% ก่อนเริ่มงาน — ไม่มีค่าใช้จ่ายแอบแฝง</p>
+
+      <div class="pricing-grid">
+
+        <!-- TYPE 1 -->
+        <div class="pricing-card reveal">
+          <div class="pricing-bucket">&#9200;</div>
+          <div class="pricing-name">AI Day Workshop</div>
+          <div class="pricing-duration">1 วัน (6-7 ชม.)</div>
+          <div class="pricing-price">&#3647;30,000</div>
+          <div class="pricing-unit">ต่อครั้ง</div>
+          <div class="pricing-outcome">ทีมขายได้เวลาคืน 5+ ชม./สัปดาห์ — เห็นผลวันเดียว</div>
+          <ul class="pricing-features">
+            <li>วิเคราะห์ workflow ทีมขาย</li>
+            <li>Build AI tool ที่ใช้ได้จริงในวันนั้น</li>
+            <li>สอน team lead maintain เอง</li>
+            <li>วัดผล Before / After ทันที</li>
+          </ul>
+          <a href="https://rnattapatch.github.io/intake-form.github.io/" class="pricing-cta secondary">เริ่มต้นที่นี่</a>
+        </div>
+
+        <!-- TYPE 2 -->
+        <div class="pricing-card featured reveal">
+          <div class="popular-tag">RECOMMENDED</div>
+          <div class="pricing-bucket">&#128737;</div>
+          <div class="pricing-name">AI Workshop + Follow-up</div>
+          <div class="pricing-duration">Workshop 1 วัน + 30 วัน Follow-up</div>
+          <div class="pricing-price">&#3647;50,000</div>
+          <div class="pricing-unit">ต่อ package</div>
+          <div class="pricing-outcome">ระบบ AI ที่ build ยังใช้งานได้จริงหลัง 30 วัน — ทีมไม่หลุด ไม่หยุดใช้</div>
+          <ul class="pricing-features">
+            <li>ทุกอย่างใน Workshop รวมอยู่แล้ว</li>
+            <li>Follow-up 4 ครั้ง (สัปดาห์ละ 1)</li>
+            <li>ปรับ workflow ตาม feedback จริง</li>
+            <li>Async LINE support 30 วัน</li>
+          </ul>
+          <a href="https://rnattapatch.github.io/intake-form.github.io/" class="pricing-cta primary">ประเมินปัญหาทีมขาย &#8594;</a>
+        </div>
+
+        <!-- TYPE 3 -->
+        <div class="pricing-card reveal">
+          <div class="pricing-bucket">&#128176;</div>
+          <div class="pricing-name">1-Month Sales System Sprint</div>
+          <div class="pricing-duration">1 เดือน (4 Sessions + Async)</div>
+          <div class="pricing-price">&#3647;65,000</div>
+          <div class="pricing-unit">ต่อ project</div>
+          <div class="pricing-outcome">KPI + Commission + AI Workflow + Training ครบในเดือนเดียว</div>
+          <ul class="pricing-features">
+            <li>Discovery &#8594; Design &#8594; Build &#8594; Training</li>
+            <li>KPI Dashboard + Commission Calculator</li>
+            <li>n8n workflow + AI tools สำหรับทีม</li>
+            <li>Training deck + Handover checklist</li>
+            <li>Async LINE support 30 วัน</li>
+          </ul>
+          <a href="https://rnattapatch.github.io/intake-form.github.io/" class="pricing-cta secondary">สำหรับธุรกิจที่พร้อม</a>
+        </div>
+
+      </div>
+
+      <div class="upsell-note reveal">
+        <strong>เริ่มจาก Workshop &#3647;30K</strong> &#8594; ต่อ Follow-up 1 เดือน &#8594; ขยายเป็น Monthly Retainer<br>ไม่ต้องตัดสินใจก้อนใหญ่ก่อน — เริ่มเล็กก่อนได้
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== QUALIFY SECTION ========== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label reveal"><span class="line"></span> IS THIS FOR YOU?</div>
+      <h2 class="section-title reveal">เช็คก่อนว่าเราเหมาะกัน</h2>
+      <p class="section-sub reveal">ปันทำงานกับเจ้าของธุรกิจที่จริงจัง ไม่ใช่ทุกคน</p>
+
+      <div class="qualify-grid">
+        <div class="qualify-box yes reveal">
+          <div class="qualify-heading">&#10003; นี่สำหรับคุณ ถ้า...</div>
+          <ul class="qualify-list">
+            <li><span class="q-icon">&#10004;</span> มีทีมขายอยู่แล้ว แต่ยอดไม่ขยับ</li>
+            <li><span class="q-icon">&#10004;</span> รู้สึกว่า "แบกยอดอยู่คนเดียว" ทั้งที่มีทีม</li>
+            <li><span class="q-icon">&#10004;</span> อยากให้ระบบ run ได้เอง ไม่ต้องอยู่ตลอด</li>
+            <li><span class="q-icon">&#10004;</span> พร้อม invest เพื่อสร้างระบบจริง ไม่ใช่แค่เรียนรู้</li>
+          </ul>
+        </div>
+        <div class="qualify-box no reveal">
+          <div class="qualify-heading">&#10007; ไม่ใช่สำหรับคุณ ถ้า...</div>
+          <ul class="qualify-list">
+            <li><span class="q-icon">&#10060;</span> Freelancer หรือ Solo — ไม่มีทีม</li>
+            <li><span class="q-icon">&#10060;</span> ธุรกิจ B2C ที่ขาย volume ราคาถูก</li>
+            <li><span class="q-icon">&#10060;</span> ต้องการ "เทคนิคปิดการขาย" แบบ quick fix</li>
+            <li><span class="q-icon">&#10060;</span> ยังไม่มีงบลงทุนและต้องการของฟรี</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ABOUT SECTION — 10% ========== -->
+  <section class="section">
+    <div class="container">
+      <div class="glass-card reveal">
+        <div class="about-card">
+          <img src="pun-avatar.png" class="about-avatar" alt="ปัน ณัฐพัชร์">
+          <div class="about-info">
+            <div class="about-name">ปัน ณัฐพัชร์</div>
+            <div class="about-title">B2B Sales Consulting & Agentic AI Transformation</div>
+            <ul class="about-bullets">
+              <li><span class="ab-icon">&#9889;</span> เบื้องหลังการวางระบบทีมขาย SME มูลค่ายอดรวม 100+ ล้านบาท</li>
+              <li><span class="ab-icon">&#9889;</span> ใช้ AI + n8n + Claude Code สร้างระบบจริงให้ลูกค้า — ไม่ใช่แค่สอน theory</li>
+              <li><span class="ab-icon">&#9889;</span> อ่านทุก form เอง ดูว่าช่วยธุรกิจคุณได้จริงไหม ก่อนนัดคุย</li>
+              <li><span class="ab-icon">&#9889;</span> ลูกค้าทุกคนได้ AI workflow ที่ใช้งานได้กลับไปอย่างน้อย 1 ตัว</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CTA SECTION ========== -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-card reveal">
+        <h2 class="cta-title">พร้อมจะหยุดแบกยอดคนเดียว?</h2>
+        <p class="cta-sub">กรอกแบบฟอร์ม 3 นาที — ปันอ่านเองทุกใบ<br>ดูว่าธุรกิจของคุณเหมาะกับ package ไหน</p>
+        <a href="https://rnattapatch.github.io/intake-form.github.io/" class="cta-btn">ประเมินปัญหาทีมขายของคุณ &#8594;</a>
+        <div class="cta-note">ไม่มีค่าใช้จ่าย | ไม่มี spam | ปันอ่านเองทุกใบ</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="site-footer">
+    <a href="https://www.openlink.co/pun_nattapatch">@pun_nattapatch</a>
+    <div style="margin-top:8px;">&#169; 2026 Pun Nattapatch. All rights reserved.</div>
+  </footer>
+
+</div>
+
+<script>
+  // === A/B Hook URL Parameter (Phase 3) ===
+  var HOOKS = {
+    A: 'ต้นทุนขึ้นทุกวัน แต่ทีมขายคุณยังทำงานแบบเดิม?',
+    B: 'คู่แข่งคุณ กำลังให้ AI ทำงานแทนเซลล์อยู่แล้ว',
+    C: 'เจ้าของธุรกิจที่ฉลาด ไม่ได้จ้างคนเพิ่ม แต่ให้ AI ทำแทน',
+    D: 'โลกเปลี่ยน ต้นทุนเพิ่ม แต่ธุรกิจที่รอดคือธุรกิจที่มีระบบขาย',
+    E: 'คนอื่นใช้ AI ช่วยหาลูกค้าแล้ว ทีมคุณยังนั่งเคาะ Excel อยู่เลย?'
+  };
+
+  var hookParam = new URLSearchParams(window.location.search).get('hook');
+  if (hookParam && HOOKS[hookParam]) {
+    // Use textContent for safety — headline becomes single line
+    var mainEl = document.getElementById('headline-main');
+    var subEl = document.getElementById('headline-sub');
+    var accentEl = document.getElementById('headline-accent');
+    mainEl.textContent = HOOKS[hookParam];
+    subEl.textContent = '';
+    accentEl.textContent = '';
+  }
+
+  // Append hookVariant to all CTA links so intake-form can log which channel converted
+  if (hookParam) {
+    var links = document.querySelectorAll('a[href*="intake-form"]');
+    for (var i = 0; i < links.length; i++) {
+      var url = new URL(links[i].href);
+      url.searchParams.set('hook', hookParam);
+      links[i].href = url.toString();
+    }
+  }
+
+  // === Scroll Reveal ===
+  var reveals = document.querySelectorAll('.reveal');
+  var observer = new IntersectionObserver(function(entries) {
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].isIntersecting) {
+        entries[i].target.classList.add('visible');
+        observer.unobserve(entries[i].target);
+      }
+    }
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+  for (var i = 0; i < reveals.length; i++) {
+    observer.observe(reveals[i]);
+  }
+</script>
+
+</body>
+</html>
